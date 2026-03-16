@@ -2,6 +2,9 @@ import os
 from discord.ext import commands
 from openai import OpenAI
 
+print("DISCORD_TOKEN is set to:", os.environ.get("DISCORD_TOKEN"))
+print("OPENAI_API_KEY is set to:", os.environ.get("OPENAI_API_KEY"))
+
 # Make sure these environment variables exist in Railway
 # OPENAI_API_KEY  -> your OpenAI key
 # DISCORD_TOKEN   -> your Discord bot token
