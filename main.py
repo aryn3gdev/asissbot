@@ -8,7 +8,7 @@ import requests
 # -----------------------------
 DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
 HF_API_TOKEN = os.environ.get("HF_API_TOKEN")
-MODEL = "OpenAssistant/oasst-sft-6-llama-30b"  # Hugging Face hosted text-generation model
+MODEL = "facebook/opt-1.3b"  # Hugging Face hosted text-generation model
 
 if not DISCORD_TOKEN or not HF_API_TOKEN:
     raise ValueError("DISCORD_TOKEN and HF_API_TOKEN must be set as environment variables.")
