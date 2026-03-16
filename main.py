@@ -2,12 +2,13 @@ import os
 from discord.ext import commands
 from openai import OpenAI
 
-# Get your tokens from environment variables
-OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
+# Make sure these environment variables exist in Railway
+# OPENAI_API_KEY  -> your OpenAI key
+# DISCORD_TOKEN   -> your Discord bot token
 DISCORD_TOKEN = os.environ["DISCORD_TOKEN"]
 
-# Initialize OpenAI client
-openai_client = OpenAI()  # No api_key argument needed; it reads OPENAI_API_KEY automatically
+# Initialize OpenAI client (reads OPENAI_API_KEY automatically)
+openai_client = OpenAI()
 
 # Initialize Discord bot
 bot = commands.Bot(command_prefix="!")
@@ -24,10 +25,8 @@ async def ask(ctx, *, question):
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": question}]
         )
-        answer = response.choices[0].message.content
-        await ctx.send(answer)
+        await ctx.send(response.choices[0].message.content)
     except Exception as e:
         await ctx.send(f"Error: {e}")
 
-# Run the bot
 bot.run(DISCORD_TOKEN)
