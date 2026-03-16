@@ -1,14 +1,13 @@
-import discord
-from discord.ext import commands
 import os
+from discord.ext import commands
 from openai import OpenAI
 
-# Load environment variables
-openai_api_key = os.environ.get("API_KEY")
-discord_token = os.environ.get("TOKEN")
+# Load environment variables from Railway
+OPENAI_API_KEY = os.environ.get("API_KEY")
+DISCORD_TOKEN = os.environ.get("TOKEN")
 
 # Initialize OpenAI client
-client = OpenAI(api_key=openai_api_key)
+openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
 # Initialize Discord bot
 bot = commands.Bot(command_prefix="!")
@@ -21,7 +20,7 @@ async def on_ready():
 async def ask(ctx, *, question):
     """Responds to user queries using OpenAI."""
     try:
-        response = client.chat.completions.create(
+        response = openai_client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": question}]
         )
@@ -30,5 +29,4 @@ async def ask(ctx, *, question):
     except Exception as e:
         await ctx.send(f"Error: {e}")
 
-# Run the bot
-bot.run(discord_token)
+bot.run(DISCORD_TOKEN)
