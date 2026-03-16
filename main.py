@@ -2,12 +2,12 @@ import os
 from discord.ext import commands
 from openai import OpenAI
 
-# Load environment variables from Railway
-OPENAI_API_KEY = os.environ.get("API_KEY")
-DISCORD_TOKEN = os.environ.get("TOKEN")
+# Get your tokens from environment variables
+OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
+DISCORD_TOKEN = os.environ["DISCORD_TOKEN"]
 
 # Initialize OpenAI client
-openai_client = OpenAI(api_key=OPENAI_API_KEY)
+openai_client = OpenAI()  # No api_key argument needed; it reads OPENAI_API_KEY automatically
 
 # Initialize Discord bot
 bot = commands.Bot(command_prefix="!")
@@ -29,4 +29,5 @@ async def ask(ctx, *, question):
     except Exception as e:
         await ctx.send(f"Error: {e}")
 
+# Run the bot
 bot.run(DISCORD_TOKEN)
