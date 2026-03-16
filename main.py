@@ -8,16 +8,7 @@ import requests
 # -----------------------------
 DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
 HF_API_TOKEN = os.environ.get("HF_API_TOKEN")
-MODEL = "tiiuae/falcon-7b-instruct"
-
-payload = {
-    "inputs": question,
-    "parameters": {
-        "max_new_tokens": 512,
-        "temperature": 0.7,
-        "top_p": 0.95
-    }
-}
+MODEL = "tiiuae/falcon-7b-instruct"  # Hugging Face hosted text-generation model
 
 if not DISCORD_TOKEN or not HF_API_TOKEN:
     raise ValueError("DISCORD_TOKEN and HF_API_TOKEN must be set as environment variables.")
@@ -34,19 +25,36 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 # Hugging Face API call
 # -----------------------------
 def query_hf_api(question: str) -> str:
+    """Send a question to Hugging Face text-generation model and get the answer."""
     headers = {"Authorization": f"Bearer {HF_API_TOKEN}"}
-    payload = {"inputs": question}
-    response = requests.post(
-        f"https://api-inference.huggingface.co/models/{MODEL}",
-        headers=headers,
-        json=payload,
-        timeout=60  # Prevent hanging
-    )
-    if response.status_code != 200:
+    payload = {
+        "inputs": question,
+        "parameters": {
+            "max_new_tokens": 512,
+            "temperature": 0.7,
+            "top_p": 0.95
+        }
+    }
+
+    try:
+        response = requests.post(
+            f"https://api-inference.huggingface.co/models/{MODEL}",
+            headers=headers,
+            json=payload,
+            timeout=60  # prevent hanging
+        )
+    except requests.exceptions.RequestException as e:
+        return f"Request error: {e}"
+
+    # Check response
+    if response.status_code == 503:
+        return "Model is loading on Hugging Face. Please wait a few seconds and try again."
+    elif response.status_code == 404:
+        return "Model not found. Check the MODEL variable."
+    elif response.status_code != 200:
         return f"Error from Hugging Face API: {response.status_code}"
-    
+
     data = response.json()
-    # API returns a list of dicts with 'generated_text'
     if isinstance(data, list) and "generated_text" in data[0]:
         return data[0]["generated_text"]
     elif isinstance(data, dict) and "error" in data:
@@ -55,11 +63,11 @@ def query_hf_api(question: str) -> str:
         return "I couldn't generate a response."
 
 # -----------------------------
-# Commands
+# Discord commands
 # -----------------------------
 @bot.command(name="ask")
 async def ask(ctx, *, question: str):
-    """Ask the AI a question"""
+    """Ask the AI a question."""
     await ctx.send("Thinking...")
     answer = query_hf_api(question)
     await ctx.send(answer)
