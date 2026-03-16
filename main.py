@@ -1,11 +1,17 @@
 import discord
 from discord.ext import commands
+import os
 from openai import OpenAI
 
-bot = commands.Bot(command_prefix="!")
+# Load environment variables
+openai_api_key = os.environ.get("API_KEY")
+discord_token = os.environ.get("TOKEN")
 
-openai_api_key = "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"
+# Initialize OpenAI client
 client = OpenAI(api_key=openai_api_key)
+
+# Initialize Discord bot
+bot = commands.Bot(command_prefix="!")
 
 @bot.event
 async def on_ready():
@@ -13,10 +19,16 @@ async def on_ready():
 
 @bot.command()
 async def ask(ctx, *, question):
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": question}]
-    )
-    await ctx.send(response.choices[0].message.content)
+    """Responds to user queries using OpenAI."""
+    try:
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": question}]
+        )
+        answer = response.choices[0].message.content
+        await ctx.send(answer)
+    except Exception as e:
+        await ctx.send(f"Error: {e}")
 
-bot.run("MTQ4MzE1ODcyNDE0MjE3MDE1Mw.GJRX3B.IzgyG29De8CQD44e2xnNBSo851tASMNu1xlrg4")
+# Run the bot
+bot.run(discord_token)
