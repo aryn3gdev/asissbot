@@ -8,7 +8,7 @@ import requests
 # -----------------------------
 DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
 HF_API_TOKEN = os.environ.get("HF_API_TOKEN")
-MODEL = "facebook/opt-1.3b"  # Hugging Face hosted text-generation model
+MODEL = "tiiuae/falcon-7b-instruct"  # Hosted on HF Inference API
 
 if not DISCORD_TOKEN or not HF_API_TOKEN:
     raise ValueError("DISCORD_TOKEN and HF_API_TOKEN must be set as environment variables.")
@@ -17,22 +17,22 @@ if not DISCORD_TOKEN or not HF_API_TOKEN:
 # Discord bot setup
 # -----------------------------
 intents = discord.Intents.default()
-intents.message_content = True  # Needed to read messages
+intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 # -----------------------------
 # Hugging Face API call
 # -----------------------------
-def query_hf_api(question: str) -> str:
-    """Send a question to Hugging Face text-generation model and get the answer."""
+def query_hf_api(prompt: str) -> str:
+    """Query a hosted Hugging Face text-generation model."""
     headers = {"Authorization": f"Bearer {HF_API_TOKEN}"}
     payload = {
-        "inputs": question,
+        "inputs": prompt,
         "parameters": {
-            "max_new_tokens": 512,
+            "max_new_tokens": 256,
             "temperature": 0.7,
-            "top_p": 0.95
+            "top_p": 0.9
         }
     }
 
@@ -41,16 +41,18 @@ def query_hf_api(question: str) -> str:
             f"https://api-inference.huggingface.co/models/{MODEL}",
             headers=headers,
             json=payload,
-            timeout=60  # prevent hanging
+            timeout=60
         )
     except requests.exceptions.RequestException as e:
         return f"Request error: {e}"
 
-    # Check response
+    # API response handling
     if response.status_code == 503:
-        return "Model is loading on Hugging Face. Please wait a few seconds and try again."
+        return "Model is loading on Hugging Face. Try again in a few seconds."
     elif response.status_code == 404:
         return "Model not found. Check the MODEL variable."
+    elif response.status_code == 401:
+        return "Unauthorized. Check your HF_API_TOKEN."
     elif response.status_code != 200:
         return f"Error from Hugging Face API: {response.status_code}"
 
@@ -63,7 +65,7 @@ def query_hf_api(question: str) -> str:
         return "I couldn't generate a response."
 
 # -----------------------------
-# Discord commands
+# Discord command
 # -----------------------------
 @bot.command(name="ask")
 async def ask(ctx, *, question: str):
