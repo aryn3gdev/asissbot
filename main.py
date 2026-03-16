@@ -8,7 +8,16 @@ import requests
 # -----------------------------
 DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
 HF_API_TOKEN = os.environ.get("HF_API_TOKEN")
-MODEL = "iuae/falcon-7b-instruct"  # You can change to any Hugging Face model
+MODEL = "tiiuae/falcon-7b-instruct"
+
+payload = {
+    "inputs": question,
+    "parameters": {
+        "max_new_tokens": 512,
+        "temperature": 0.7,
+        "top_p": 0.95
+    }
+}
 
 if not DISCORD_TOKEN or not HF_API_TOKEN:
     raise ValueError("DISCORD_TOKEN and HF_API_TOKEN must be set as environment variables.")
