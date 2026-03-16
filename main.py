@@ -8,7 +8,7 @@ import requests
 # -----------------------------
 DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
 HF_API_TOKEN = os.environ.get("HF_API_TOKEN")
-MODEL = "mosaicml/mpt-7b-instruct"  # You can change to any Hugging Face model
+MODEL = "gpt2"  # You can change to any Hugging Face model
 
 if not DISCORD_TOKEN or not HF_API_TOKEN:
     raise ValueError("DISCORD_TOKEN and HF_API_TOKEN must be set as environment variables.")
