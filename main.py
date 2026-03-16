@@ -1,20 +1,21 @@
 import os
+import discord
 from discord.ext import commands
 from openai import OpenAI
 
-print("DISCORD_TOKEN is set to:", os.environ.get("DISCORD_TOKEN"))
-print("OPENAI_API_KEY is set to:", os.environ.get("OPENAI_API_KEY"))
-
-# Make sure these environment variables exist in Railway
-# OPENAI_API_KEY  -> your OpenAI key
-# DISCORD_TOKEN   -> your Discord bot token
+# Load environment variables
 DISCORD_TOKEN = os.environ["DISCORD_TOKEN"]
+OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
 
-# Initialize OpenAI client (reads OPENAI_API_KEY automatically)
-openai_client = OpenAI()
+# Set up intents (use default intents or customize)
+intents = discord.Intents.default()
+intents.message_content = True  # Required if your bot reads message content
 
-# Initialize Discord bot
-bot = commands.Bot(command_prefix="!")
+# Initialize bot with intents
+bot = commands.Bot(command_prefix="!", intents=intents)
+
+# Initialize OpenAI client
+openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
 @bot.event
 async def on_ready():
@@ -23,13 +24,10 @@ async def on_ready():
 @bot.command()
 async def ask(ctx, *, question):
     """Responds to user queries using OpenAI."""
-    try:
-        response = openai_client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": question}]
-        )
-        await ctx.send(response.choices[0].message.content)
-    except Exception as e:
-        await ctx.send(f"Error: {e}")
+    response = openai_client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": question}]
+    )
+    await ctx.send(response.choices[0].message.content)
 
 bot.run(DISCORD_TOKEN)
